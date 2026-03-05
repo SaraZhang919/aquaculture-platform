@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floating Aquaculture Platform – Engineering Visualization</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0f1a;
+    color: #c8dfe8;
+    font-family: 'Rajdhani', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+    border-bottom: 1px solid #1e3a4a;
+    background: rgba(8,16,28,0.95);
+    z-index: 10;
+  }
+
+  .header-left { display: flex; flex-direction: column; }
+  .header-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #7fd4f0;
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 11px;
+    color: #456a7a;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: #4a8fa0;
+  }
+  .header-right span { display: flex; flex-direction: column; align-items: flex-end; }
+  .header-right strong { color: #7fd4f0; font-size: 12px; }
+
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .legend {
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    background: rgba(8,16,28,0.88);
+    border: 1px solid #1e3a4a;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    color: #5a9ab0;
+    line-height: 1.9;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-rect { width: 14px; height: 8px; flex-shrink: 0; }
+
+  .compass {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 70px;
+    height: 70px;
+  }
+
+  .scale-bar {
+    position: absolute;
+    bottom: 16px;
+    right: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: #4a8fa0;
+    text-align: center;
+  }
+  .scale-line {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 3px;
+  }
+  .scale-segment {
+    height: 8px;
+    width: 40px;
+    border: 1px solid #4a8fa0;
+  }
+  .scale-segment:nth-child(odd) { background: #4a8fa0; }
+  .scale-segment:nth-child(even) { background: transparent; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">Floating Aquaculture Platform — Aerial Engineering Plan</div>
+    <div class="header-sub">DRAWING NO. FAP-2024-001 &nbsp;|&nbsp; SCALE 1:500 &nbsp;|&nbsp; VIEW: 45° ISOMETRIC BIRD'S-EYE</div>
+  </div>
+  <div class="header-right">
+    <span><strong>WATER AREA</strong>49 MU (~32,700 m²)</span>
+    <span><strong>PLATFORM</strong>6 × Ø6m TANKS</span>
+    <span><strong>TROUGH</strong>25m × 5m × 2.5m</span>
+    <span><strong>ORIENTATION</strong>E–W ROWS</span>
+  </div>
+</div>
+
+<div class="canvas-wrap">
+  <canvas id="c"></canvas>
+
+  <!-- Compass -->
+  <svg class="compass" viewBox="0 0 70 70">
+    <circle cx="35" cy="35" r="32" fill="none" stroke="#1e3a4a" stroke-width="1.5"/>
+    <circle cx="35" cy="35" r="2" fill="#7fd4f0"/>
+    <!-- N arrow -->
+    <polygon points="35,6 31,28 35,24 39,28" fill="#7fd4f0"/>
+    <polygon points="35,64 31,42 35,46 39,42" fill="#2a4a5a"/>
+    <polygon points="6,35 28,31 24,35 28,39" fill="#2a4a5a"/>
+    <polygon points="64,35 42,31 46,35 42,39" fill="#2a4a5a"/>
+    <text x="35" y="4" text-anchor="middle" fill="#7fd4f0" font-family="Share Tech Mono" font-size="9" font-weight="bold">N</text>
+    <text x="35" y="68" text-anchor="middle" fill="#456a7a" font-family="Share Tech Mono" font-size="8">S</text>
+    <text x="2" y="38" text-anchor="middle" fill="#456a7a" font-family="Share Tech Mono" font-size="8">W</text>
+    <text x="68" y="38" text-anchor="middle" fill="#456a7a" font-family="Share Tech Mono" font-size="8">E</text>
+  </svg>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2a7a9a;border:1px solid #5abfdf"></div> Circular Fish Tank (Ø6m × 1.5m deep)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1a5a7a;border:1px solid #3a9abf"></div> Modular Floating Platform</div>
+    <div class="legend-item"><div class="legend-rect" style="background:#3a6a5a;border:1px solid #5abf9a"></div> Rectangular Trough (25×5×2.5m, 3 sections)</div>
+    <div class="legend-item"><div class="legend-rect" style="background:#8a6a3a;border:1px solid #cfaa6a"></div> North Walkway (Shore Connection)</div>
+    <div class="legend-item"><div class="legend-rect" style="background:#4a8fa0;border:1px solid #7fd4f0" style="width:14px;height:3px;border-radius:2px"></div> Pipeline</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(180,220,255,0.15);border:1px solid #3a6a8a;border-radius:0"></div> Water Surface (~49 mu)</div>
+  </div>
+
+  <!-- Scale bar -->
+  <div class="scale-bar">
+    <div class="scale-line">
+      <div class="scale-segment"></div>
+      <div class="scale-segment"></div>
+      <div class="scale-segment"></div>
+      <div class="scale-segment"></div>
+    </div>
+    0 &nbsp;&nbsp;&nbsp;&nbsp; 10 &nbsp;&nbsp;&nbsp;&nbsp; 20 &nbsp;&nbsp;&nbsp;&nbsp; 30 &nbsp;&nbsp; 40m
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  draw();
+}
+
+// Isometric projection helpers
+// World: x=East, y=North, z=Up
+// Iso projection (45-degree aerial, cabinet-like)
+let CAM = { ox: 0, oy: 0, scale: 22 };
+
+function project(wx, wy, wz) {
+  // Classic isometric: rotate 45° around Z, then tilt
+  const angle = Math.PI / 4;   // 45°
+  const tilt = 0.52;            // vertical compression
+  const ix = (wx - wy) * Math.cos(angle);
+  const iy = (wx + wy) * Math.sin(angle) * tilt - wz * 0.85;
+  return {
+    x: CAM.ox + ix * CAM.scale,
+    y: CAM.oy + iy * CAM.scale
+  };
+}
+
+function drawWater(W, H) {
+  // Deep water gradient background
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W,H)*0.75);
+  grad.addColorStop(0, '#0d2535');
+  grad.addColorStop(0.5, '#0a1e2d');
+  grad.addColorStop(1, '#06121c');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Water shimmer lines (isometric wave hints)
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  for (let i = -40; i < 80; i += 3) {
+    const p1 = project(i, -30, 0);
+    const p2 = project(i + 60, 30, 0);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.strokeStyle = '#4ab8d8';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+  for (let i = -30; i < 80; i += 3) {
+    const p1 = project(-20, i, 0);
+    const p2 = project(60, i + 20, 0);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.strokeStyle = '#2a6a8a';
+    ctx.lineWidth = 0.4;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawShore() {
+  // Shore on the north side (high y values in world space)
+  const pts = [
+    project(-25, 40, 0), project(50, 40, 0),
+    project(50, 60, 0), project(-25, 60, 0)
+  ];
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  // Shore gradient
+  const grad = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[2].x, pts[2].y);
+  grad.addColorStop(0, '#1a3020');
+  grad.addColorStop(0.3, '#1e3a22');
+  grad.addColorStop(1, '#2a4a2e');
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = '#3a6a45';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Shore edge detail
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  ctx.lineTo(pts[1].x, pts[1].y);
+  ctx.strokeStyle = '#4a9a60';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Shore label
+  const mid = project(10, 48, 0);
+  ctx.font = 'bold 11px "Share Tech Mono"';
+  ctx.fillStyle = '#4a9a60';
+  ctx.textAlign = 'center';
+  ctx.fillText('SHORE / LAND', mid.x, mid.y);
+}
+
+function drawIsoBox(x, y, z, w, d, h, topColor, sideEColor, sideNColor, lineColor) {
+  // Draw a 3D box in isometric view
+  // Bottom face corners
+  const bl = project(x, y, z);
+  const br = project(x+w, y, z);
+  const tr = project(x+w, y+d, z);
+  const tl = project(x, y+d, z);
+  // Top face
+  const blt = project(x, y, z+h);
+  const brt = project(x+w, y, z+h);
+  const trt = project(x+w, y+d, z+h);
+  const tlt = project(x, y+d, z+h);
+
+  // South face (y = y, x varies)
+  ctx.beginPath();
+  ctx.moveTo(bl.x, bl.y);
+  ctx.lineTo(br.x, br.y);
+  ctx.lineTo(brt.x, brt.y);
+  ctx.lineTo(blt.x, blt.y);
+  ctx.closePath();
+  ctx.fillStyle = sideEColor;
+  ctx.fill();
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 0.8; ctx.stroke();
+
+  // East face (x = x+w, y varies)
+  ctx.beginPath();
+  ctx.moveTo(br.x, br.y);
+  ctx.lineTo(tr.x, tr.y);
+  ctx.lineTo(trt.x, trt.y);
+  ctx.lineTo(brt.x, brt.y);
+  ctx.closePath();
+  ctx.fillStyle = sideNColor;
+  ctx.fill();
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 0.8; ctx.stroke();
+
+  // Top face
+  ctx.beginPath();
+  ctx.moveTo(blt.x, blt.y);
+  ctx.lineTo(brt.x, brt.y);
+  ctx.lineTo(trt.x, trt.y);
+  ctx.lineTo(tlt.x, tlt.y);
+  ctx.closePath();
+  ctx.fillStyle = topColor;
+  ctx.fill();
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 0.8; ctx.stroke();
+}
+
+function drawIsoCircle(cx, cy, cz, r, height, steps=32) {
+  // Draw an isometric cylinder
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const a = (i / steps) * Math.PI * 2;
+    pts.push({ wx: cx + Math.cos(a)*r, wy: cy + Math.sin(a)*r });
+  }
+
+  // Side walls (draw visible half first)
+  // Determine which half is "front" (south-east in iso)
+  // We'll draw the "south" half of the cylinder side
+  ctx.save();
+
+  // Bottom ellipse projected points
+  const bpts = pts.map(p => project(p.wx, p.wy, cz));
+  const tpts = pts.map(p => project(p.wx, p.wy, cz + height));
+
+  // Draw side faces in segments - back half first
+  for (let i = 0; i < steps; i++) {
+    const a = ((i + 0.5) / steps) * Math.PI * 2;
+    // Determine if this segment faces away or toward camera
+    const nx = Math.cos(a);
+    const ny = Math.sin(a);
+    // Camera direction in world: roughly (+x - y) normalized (SW direction)
+    const dot = nx - ny * 0.8;
+
+    const shade = dot < 0 ? 'back' : 'front';
+    const bt = bpts[i], bb = bpts[i+1];
+    const tt = tpts[i], tb = tpts[i+1];
+
+    ctx.beginPath();
+    ctx.moveTo(bt.x, bt.y);
+    ctx.lineTo(bb.x, bb.y);
+    ctx.lineTo(tb.x, tb.y);
+    ctx.lineTo(tt.x, tt.y);
+    ctx.closePath();
+
+    if (shade === 'back') {
+      ctx.fillStyle = '#0d2a3e';
+    } else {
+      const t = (dot / 1.8 + 0.5);
+      const r = Math.round(30 + t * 50);
+      const g = Math.round(80 + t * 80);
+      const b = Math.round(120 + t * 80);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+    }
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(100,200,230,0.25)';
+    ctx.lineWidth = 0.4;
+    ctx.stroke();
+  }
+
+  // Top ellipse (tank top ring / water surface)
+  ctx.beginPath();
+  ctx.moveTo(tpts[0].x, tpts[0].y);
+  tpts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  const waterGrad = ctx.createRadialGradient(
+    project(cx, cy, cz+height).x, project(cx, cy, cz+height).y, 0,
+    project(cx, cy, cz+height).x, project(cx, cy, cz+height).y, r*CAM.scale*0.8
+  );
+  waterGrad.addColorStop(0, 'rgba(80,180,220,0.7)');
+  waterGrad.addColorStop(0.6, 'rgba(20,100,160,0.8)');
+  waterGrad.addColorStop(1, 'rgba(10,60,100,0.9)');
+  ctx.fillStyle = waterGrad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(120,220,255,0.6)';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawTankRoof(cx, cy, baseZ, r) {
+  // Lightweight prefabricated roof - low pitch hexagonal/conical
+  const roofH = 0.6;
+  const steps = 6;
+  const top = project(cx, cy, baseZ + roofH);
+
+  for (let i = 0; i < steps; i++) {
+    const a1 = (i / steps) * Math.PI * 2;
+    const a2 = ((i+1) / steps) * Math.PI * 2;
+    const p1 = project(cx + Math.cos(a1)*r*1.05, cy + Math.sin(a1)*r*1.05, baseZ);
+    const p2 = project(cx + Math.cos(a2)*r*1.05, cy + Math.sin(a2)*r*1.05, baseZ);
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(top.x, top.y);
+    ctx.closePath();
+
+    // Determine face direction for shading
+    const midA = (a1 + a2) / 2;
+    const nx = Math.cos(midA), ny = Math.sin(midA);
+    const dot = nx - ny * 0.8;
+    const t = dot / 1.8 + 0.5;
+    const r2 = Math.round(60 + t * 60);
+    const g = Math.round(90 + t * 60);
+    const b = Math.round(80 + t * 50);
+    ctx.fillStyle = `rgb(${r2},${g},${b})`;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150,200,180,0.5)';
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
+  }
+
+  // Roof ridge ring
+  const ridgePts = [];
+  for (let i = 0; i <= 24; i++) {
+    const a = (i/24)*Math.PI*2;
+    ridgePts.push(project(cx+Math.cos(a)*r*1.05, cy+Math.sin(a)*r*1.05, baseZ));
+  }
+  ctx.beginPath();
+  ctx.moveTo(ridgePts[0].x, ridgePts[0].y);
+  ridgePts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = 'rgba(180,220,190,0.7)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
+function drawLabel(wx, wy, wz, text, color='#7fd4f0', size=10, align='center') {
+  const p = project(wx, wy, wz);
+  ctx.save();
+  ctx.font = `${size}px "Share Tech Mono"`;
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 4;
+  ctx.fillText(text, p.x, p.y);
+  ctx.restore();
+}
+
+function drawDimLine(wx1, wy1, wz1, wx2, wy2, wz2, label, color='#456a7a') {
+  const p1 = project(wx1, wy1, wz1);
+  const p2 = project(wx2, wy2, wz2);
+  const mx = (p1.x + p2.x)/2, my = (p1.y + p2.y)/2;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 0.7;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Tick marks
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const len = Math.sqrt(dx*dx+dy*dy);
+  const px = -dy/len*5, py = dx/len*5;
+  ctx.beginPath(); ctx.moveTo(p1.x+px, p1.y+py); ctx.lineTo(p1.x-px, p1.y-py); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p2.x+px, p2.y+py); ctx.lineTo(p2.x-px, p2.y-py); ctx.stroke();
+  ctx.font = '9px "Share Tech Mono"';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.fillText(label, mx, my - 6);
+  ctx.restore();
+}
+
+function draw() {
+  const W = canvas.width, H = canvas.height;
+
+  // Set camera origin
+  CAM.ox = W * 0.52;
+  CAM.oy = H * 0.58;
+  CAM.scale = Math.min(W, H) / 42;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // WATER
+  drawWater(W, H);
+
+  // WATER AREA BORDER
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  const waterCorners = [
+    project(-24, -18, 0), project(45, -18, 0),
+    project(45, 38, 0), project(-24, 38, 0)
+  ];
+  ctx.beginPath();
+  ctx.moveTo(waterCorners[0].x, waterCorners[0].y);
+  waterCorners.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#4ab8d8';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // SHORE
+  drawShore();
+
+  // ========= MAIN FLOATING PLATFORM =========
+  // Platform: 22m wide (E-W), 15m deep (N-S), floating at z=0, height=0.6m
+  // Positioned: x=0..22, y=10..25 (south of walkway)
+  const PX = 0, PY = 10, PW = 22, PD = 15, PH = 0.5;
+
+  // Platform shadow
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  const shadowPts = [
+    project(PX-0.3, PY-0.3, 0), project(PX+PW+0.3, PY-0.3, 0),
+    project(PX+PW+0.3, PY+PD+0.3, 0), project(PX-0.3, PY+PD+0.3, 0)
+  ];
+  ctx.beginPath();
+  ctx.moveTo(shadowPts[0].x, shadowPts[0].y+4);
+  shadowPts.forEach(p => ctx.lineTo(p.x, p.y+4));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.filter = 'blur(6px)';
+  ctx.fill();
+  ctx.restore();
+
+  // Platform body
+  drawIsoBox(PX, PY, 0, PW, PD, PH,
+    '#1a4a6a', '#0f3550', '#122f48', '#2a6a9a');
+
+  // Platform deck texture grid
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  for (let xi = 0; xi <= PW; xi += 2) {
+    const a = project(PX+xi, PY, PH), b = project(PX+xi, PY+PD, PH);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = '#5ab8d8'; ctx.lineWidth = 0.5; ctx.stroke();
+  }
+  for (let yi = 0; yi <= PD; yi += 2) {
+    const a = project(PX, PY+yi, PH), b = project(PX+PW, PY+yi, PH);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = '#5ab8d8'; ctx.lineWidth = 0.5; ctx.stroke();
+  }
+  ctx.restore();
+
+  // Platform edge highlight
+  ctx.save();
+  const edgePts = [
+    project(PX, PY, PH), project(PX+PW, PY, PH),
+    project(PX+PW, PY+PD, PH), project(PX, PY+PD, PH)
+  ];
+  ctx.beginPath();
+  ctx.moveTo(edgePts[0].x, edgePts[0].y);
+  edgePts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  ctx.strokeStyle = '#4ab8d8';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+
+  // ========= 6 CIRCULAR TANKS =========
+  // 2 rows x 3 cols, E-W orientation
+  // Row 1 (South): y ≈ 13.5, tanks at x=3,10,17
+  // Row 2 (North): y ≈ 21.5, tanks at x=3,10,17
+  const tankRadius = 3;
+  const tankDepth = 1.5;
+  const tankBaseZ = PH;
+  const tankPositions = [
+    // Row 1 (South row)
+    {x: 3.5, y: 14.2, label: 'T-01'},
+    {x: 11,  y: 14.2, label: 'T-02'},
+    {x: 18.5,y: 14.2, label: 'T-03'},
+    // Row 2 (North row)
+    {x: 3.5, y: 21,   label: 'T-04'},
+    {x: 11,  y: 21,   label: 'T-05'},
+    {x: 18.5,y: 21,   label: 'T-06'},
+  ];
+
+  // Draw tanks (back row first for proper z-order)
+  [3,4,5].forEach(i => {
+    const t = tankPositions[i];
+    drawIsoCircle(t.x, t.y, tankBaseZ, tankRadius, tankDepth);
+    drawTankRoof(t.x, t.y, tankBaseZ + tankDepth, tankRadius);
+  });
+  [0,1,2].forEach(i => {
+    const t = tankPositions[i];
+    drawIsoCircle(t.x, t.y, tankBaseZ, tankRadius, tankDepth);
+    drawTankRoof(t.x, t.y, tankBaseZ + tankDepth, tankRadius);
+  });
+
+  // Tank labels
+  tankPositions.forEach(t => {
+    drawLabel(t.x, t.y, tankBaseZ + tankDepth + 0.9, t.label, '#a0e0f8', 9);
+  });
+
+  // ========= WALKWAY (North side, connects to shore) =========
+  // Walkway: 1.5m wide, from y=25 to y=38 (shore), x=9..13 (center)
+  const WKX = 9, WKW = 4, WKY1 = PY + PD, WKY2 = 40, WKH = 0.4;
+  drawIsoBox(WKX, WKY1, 0, WKW, WKY2 - WKY1, WKH,
+    '#8a6a3a', '#6a4e28', '#5a4020', '#cfaa6a');
+
+  // Walkway railing lines
+  ctx.save();
+  for (let side of [WKX, WKX+WKW]) {
+    for (let yi = WKY1; yi <= WKY2; yi += 2) {
+      const bot = project(side, yi, 0);
+      const top = project(side, yi, WKH + 0.8);
+      ctx.beginPath(); ctx.moveTo(bot.x, bot.y); ctx.lineTo(top.x, top.y);
+      ctx.strokeStyle = 'rgba(200,170,100,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
+    }
+    const rp1 = project(side, WKY1, WKH+0.8), rp2 = project(side, WKY2, WKH+0.8);
+    ctx.beginPath(); ctx.moveTo(rp1.x, rp1.y); ctx.lineTo(rp2.x, rp2.y);
+    ctx.strokeStyle = 'rgba(200,170,100,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.restore();
+
+  drawLabel(WKX + WKW/2, (WKY1+WKY2)/2, WKH+1.5, 'WALKWAY', '#cfaa6a', 9);
+
+  // ========= PIPELINE =========
+  // From east side of platform to trough (east)
+  // Pipeline at y=17.5 (mid), from x=22 going east to trough at x=32
+  const pipeZ = PH + 0.3;
+  const pipeY = 17.5;
+  const pipePts = [
+    project(PX+PW, pipeY, pipeZ),
+    project(PX+PW+8, pipeY, pipeZ)
+  ];
+  ctx.save();
+  // Pipe shadow
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(pipePts[0].x, pipePts[0].y+3);
+  ctx.lineTo(pipePts[1].x, pipePts[1].y+3);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 6; ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Pipe body
+  ctx.beginPath();
+  ctx.moveTo(pipePts[0].x, pipePts[0].y);
+  ctx.lineTo(pipePts[1].x, pipePts[1].y);
+  ctx.strokeStyle = '#5aaac0'; ctx.lineWidth = 4; ctx.stroke();
+
+  // Pipe highlight
+  ctx.beginPath();
+  ctx.moveTo(pipePts[0].x, pipePts[0].y - 1);
+  ctx.lineTo(pipePts[1].x, pipePts[1].y - 1);
+  ctx.strokeStyle = 'rgba(180,240,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Pipe joints
+  [PX+PW+2, PX+PW+5].forEach(xi => {
+    const jp = project(xi, pipeY, pipeZ);
+    ctx.beginPath();
+    ctx.arc(jp.x, jp.y, 4, 0, Math.PI*2);
+    ctx.fillStyle = '#3a7a90'; ctx.fill();
+    ctx.strokeStyle = '#7fd4f0'; ctx.lineWidth = 0.8; ctx.stroke();
+  });
+  ctx.restore();
+
+  drawLabel(PX+PW+4, pipeY-1, pipeZ+0.8, 'PIPELINE', '#5aaac0', 8);
+
+  // ========= RECTANGULAR TROUGH =========
+  // 25m long (N-S), 5m wide, 2.5m deep, divided into 3 sections
+  // Position: east of platform
+  const TX = PX + PW + 8, TY = PY + 2, TW = 5, TD = 25, TH = 2.5;
+  const dividerColor = '#2a7a5a';
+
+  // Trough outer box
+  drawIsoBox(TX, TY, 0, TW, TD, TH,
+    '#1a4a3a', '#0f3028', '#0d2820', '#3a9a7a');
+
+  // Inside water surface
+  const troughTopPts = [
+    project(TX+0.2, TY+0.2, TH-0.3),
+    project(TX+TW-0.2, TY+0.2, TH-0.3),
+    project(TX+TW-0.2, TY+TD-0.2, TH-0.3),
+    project(TX+0.2, TY+TD-0.2, TH-0.3)
+  ];
+  ctx.beginPath();
+  ctx.moveTo(troughTopPts[0].x, troughTopPts[0].y);
+  troughTopPts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.closePath();
+  const troughWater = ctx.createLinearGradient(
+    troughTopPts[0].x, troughTopPts[0].y,
+    troughTopPts[2].x, troughTopPts[2].y
+  );
+  troughWater.addColorStop(0, 'rgba(40,160,120,0.7)');
+  troughWater.addColorStop(1, 'rgba(20,100,80,0.8)');
+  ctx.fillStyle = troughWater;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(80,200,160,0.5)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // 3 dividers (divide TD=25 into 3 equal sections: 25/3 ≈ 8.33m each)
+  [TD/3, TD*2/3].forEach(dy => {
+    const dp1 = project(TX, TY+dy, TH);
+    const dp2 = project(TX+TW, TY+dy, TH);
+    const dp3 = project(TX+TW, TY+dy, 0);
+    const dp4 = project(TX, TY+dy, 0);
+    ctx.beginPath();
+    ctx.moveTo(dp1.x, dp1.y); ctx.lineTo(dp2.x, dp2.y);
+    ctx.strokeStyle = '#5abf9a'; ctx.lineWidth = 1.5; ctx.stroke();
+    // Divider wall east face
+    ctx.beginPath();
+    ctx.moveTo(dp2.x, dp2.y); ctx.lineTo(dp3.x, dp3.y);
+    ctx.strokeStyle = '#3a8a6a'; ctx.lineWidth = 1; ctx.stroke();
+  });
+
+  // Section labels
+  ['S-1', 'S-2', 'S-3'].forEach((lbl, i) => {
+    const ly = TY + (i + 0.5) * TD/3;
+    drawLabel(TX + TW/2, ly, TH + 0.5, lbl, '#5abf9a', 9);
+  });
+
+  drawLabel(TX + TW/2 + 1, TY + TD/2, TH + 1.8, 'TROUGH (3 SECTIONS)', '#3abf8a', 9);
+
+  // ========= DIMENSION LINES =========
+  // Tank diameter
+  drawDimLine(PX+PW/2-3, PY+14.2, PH+1.8, PX+PW/2+3, PY+14.2, PH+1.8, 'Ø 6m', '#456a7a');
+  // Platform width
+  drawDimLine(PX, PY-1, 0, PX+PW, PY-1, 0, '22m', '#456a7a');
+  // Platform depth
+  drawDimLine(PX-1.5, PY, 0, PX-1.5, PY+PD, 0, '15m', '#456a7a');
+  // Trough length
+  drawDimLine(TX+TW+0.5, TY, 0, TX+TW+0.5, TY+TD, 0, '25m', '#456a7a');
+
+  // ========= FLOATING PONTOONS =========
+  // Platform pontoon details at edges
+  ctx.save();
+  ctx.globalAlpha = 0.7;
+  [[PX, PY, PX+PW, PY], [PX, PY+PD, PX+PW, PY+PD]].forEach(([x1,y1,x2,y2]) => {
+    for (let xi = x1; xi < x2; xi += 3) {
+      const pp1 = project(xi, y1, 0), pp2 = project(xi+2.5, y1, 0);
+      const pp3 = project(xi+2.5, y1, -0.4), pp4 = project(xi, y1, -0.4);
+      ctx.beginPath();
+      ctx.moveTo(pp1.x, pp1.y); ctx.lineTo(pp2.x, pp2.y);
+      ctx.lineTo(pp3.x, pp3.y); ctx.lineTo(pp4.x, pp4.y);
+      ctx.closePath();
+      ctx.fillStyle = (xi%6===0) ? '#0d3a5a' : '#0a2e4a';
+      ctx.fill();
+      ctx.strokeStyle = '#2a6a8a'; ctx.lineWidth = 0.5; ctx.stroke();
+    }
+  });
+  ctx.restore();
+
+  // ========= TITLE BLOCK =========
+  ctx.save();
+  ctx.fillStyle = 'rgba(8,16,28,0.85)';
+  ctx.fillRect(W - 220, H - 95, 210, 80);
+  ctx.strokeStyle = '#1e3a4a';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(W - 220, H - 95, 210, 80);
+
+  ctx.font = 'bold 10px "Share Tech Mono"';
+  ctx.fillStyle = '#4a8fa0';
+  ctx.textAlign = 'left';
+  const tb = [
+    ['PROJECT', 'Floating Aquaculture Platform'],
+    ['LOCATION', 'Open Water – 49 mu'],
+    ['TANKS', '6 × Ø6m × 1.5m depth'],
+    ['TROUGH', '25m × 5m × 2.5m (3 zones)'],
+    ['VIEW', '45° Isometric Aerial'],
+  ];
+  tb.forEach(([k,v], i) => {
+    ctx.fillStyle = '#4a8fa0';
+    ctx.fillText(k + ':', W - 215, H - 80 + i*13);
+    ctx.fillStyle = '#7fd4f0';
+    ctx.fillText(v, W - 175, H - 80 + i*13);
+  });
+  ctx.restore();
+
+  // North arrow label on walkway
+  ctx.save();
+  const northPt = project(11, 39.5, 1);
+  ctx.font = 'bold 11px "Share Tech Mono"';
+  ctx.fillStyle = '#4a9a60';
+  ctx.textAlign = 'center';
+  ctx.fillText('▲ NORTH', northPt.x, northPt.y);
+  ctx.restore();
+}
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>
